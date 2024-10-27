@@ -25,7 +25,8 @@
 
 
 typedef struct {
-    unsigned int  state[8]; unsigned int  length;
+    unsigned int  state[8]; 
+    unsigned int  length;
     unsigned int  curlen;
     unsigned char  buf[64];
 } SM3_STATE;

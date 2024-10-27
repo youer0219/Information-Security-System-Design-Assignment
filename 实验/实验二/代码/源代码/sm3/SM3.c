@@ -223,7 +223,8 @@ Others:
 *******************************************************************************/
 void SM3_compress(SM3_STATE* md)
 {
-    unsigned int W[68];  unsigned int W1[64];
+    unsigned int W[68];  
+    unsigned int W1[64];
 
     //if CPU uses little-endian, BigEndian function is a necessary call
     BigEndian(md->buf, 64, md->buf);
