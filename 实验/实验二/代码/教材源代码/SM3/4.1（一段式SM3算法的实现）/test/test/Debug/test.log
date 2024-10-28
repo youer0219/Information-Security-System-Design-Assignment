@@ -1,0 +1,4 @@
+﻿  test.cpp
+e:\ebook\m密码\mnote\code\ch05\5.1\test\test\test.cpp(20): warning C4244: “return”: 从“unsigned __int64”转换到“unsigned long”，可能丢失数据
+e:\ebook\m密码\mnote\code\ch05\5.1\test\test\test.cpp(224): warning C4326: “main”的返回类型应为“int”而非“void”
+  test.vcxproj -> E:\ebook\m密码\mNote\code\ch05\5.1\test\Debug\test.exe
