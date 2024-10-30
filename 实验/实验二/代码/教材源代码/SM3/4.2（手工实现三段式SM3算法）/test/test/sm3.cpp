@@ -1,29 +1,28 @@
-#include "pch.h"
+
 #include "sm3.h"
 #include <string.h>
 #include <stdio.h>
 
-/*
- * 32-bit integer manipulation macros (big endian)
- */
-#ifndef GET_ULONG_BE
-#define GET_ULONG_BE(n,b,i)                             \
-    {                                                       \
-        (n) = ( (unsigned long) (b)[(i)    ] << 24 )        \
-            | ( (unsigned long) (b)[(i) + 1] << 16 )        \
-            | ( (unsigned long) (b)[(i) + 2] <<  8 )        \
-            | ( (unsigned long) (b)[(i) + 3]       );       \
-    }
+#ifdef __BYTE_ORDER__
+#if __BYTE_ORDER__ == __BIG_ENDIAN__
+// Big endian system, no need to swap bytes
+#define GET_ULONG_BE(n,b,i)        (n = *((unsigned long *)(b + i)))
+#define PUT_ULONG_BE(n,b,i)        (*((unsigned long *)(b + i)) = (n))
+#else
+// Little endian system, swap bytes
+#define GET_ULONG_BE(n,b,i)        { \
+    (n) = (unsigned long) (b)[(i)] << 24 | \
+          (unsigned long) (b)[(i) + 1] << 16 | \
+          (unsigned long) (b)[(i) + 2] <<  8 | \
+          (unsigned long) (b)[(i) + 3]; \
+}
+#define PUT_ULONG_BE(n,b,i)        { \
+    (b)[(i)] = (unsigned char) ((n) >> 24); \
+    (b)[(i) + 1] = (unsigned char) ((n) >> 16); \
+    (b)[(i) + 2] = (unsigned char) ((n) >>  8); \
+    (b)[(i) + 3] = (unsigned char) ((n)      ); \
+}
 #endif
-
-#ifndef PUT_ULONG_BE
-#define PUT_ULONG_BE(n,b,i)                             \
-    {                                                       \
-        (b)[(i)    ] = (unsigned char) ( (n) >> 24 );       \
-        (b)[(i) + 1] = (unsigned char) ( (n) >> 16 );       \
-        (b)[(i) + 2] = (unsigned char) ( (n) >>  8 );       \
-        (b)[(i) + 3] = (unsigned char) ( (n)       );       \
-    }
 #endif
 
  /*

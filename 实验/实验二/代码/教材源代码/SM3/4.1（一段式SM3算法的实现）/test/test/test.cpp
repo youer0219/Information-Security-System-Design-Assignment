@@ -3,18 +3,16 @@
 
 #include "pch.h"
 #include <stdio.h>
-
-
 #include <memory>
-
-
+#include <cstring>
+#include <cstdint>  // 包含标准整数类型
 
 unsigned char IV[256 / 8] = { 0x73,0x80,0x16,0x6f,0x49,0x14,0xb2,0xb9,0x17,0x24,0x42,0xd7,0xda,0x8a,0x06,0x00,0xa9,0x6f,0x30,0xbc,0x16,0x31,0x38,0xaa,0xe3,0x8d,0xee,0x4d,0xb0,0xfb,0x0e,0x4e };
 
 // 循环左移
 unsigned long SL(unsigned long X, int n)
 {
-	unsigned __int64 x = X;
+	uint64_t x = X;  // 修改为标准类型
 	x = x << (n % 32);
 	unsigned long l = (unsigned long)(x >> 32);
 	return x | l;
@@ -141,7 +139,7 @@ void CF(unsigned char Vi[256 / 8], unsigned char Bi[512 / 8], unsigned char Vi1[
 void SM3Hash(unsigned char* m, int ml, unsigned char r[32])
 {
 	int l = ml * 8;
-	int k = 448 - 1 - l % 512;// 添加k个0，k 是满足 l + 1 + k ≡ 448mod512 的最小的非负整数
+	int k = 448 - 1 - l % 512; // 添加k个0，k 是满足 l + 1 + k ≡ 448mod512 的最小的非负整数
 	if (k <= 0)
 	{
 		k += 512;
@@ -199,32 +197,41 @@ void SM3Hash(unsigned char* m, int ml, unsigned char r[32])
 	// V[n]是结果
 	memcpy(r, V[n], 32);
 
-	for (int i = 0; i < n + 1; ++i)
+	for (int i = 0; i <= n; ++i)
 	{
 		delete[] V[i];
 	}
 	delete[] V;
 }
 
-
-
+// 打印缓冲区内容
 void dumpbuf(unsigned char* buf, int len) 
 {
-	int i, line = 32;
-	printf("len=%d\n", len);
-	for (i = 0; i < len; i++) {
-		printf("%02x ", buf[i]);
-		if (i>0&&(1+i) % 16 == 0)
-			putchar('\n');
+	for (int i = 0; i < len; ++i) {
+		printf("%02x", buf[i]);
+		if ((i + 1) % 16 == 0) 
+		printf("\n");
+		else
+			printf(" ");
 	}
-	return;
+	printf("\n");
 }
 
-void main()
+int main() 
 {
-	unsigned char   data[] = "abc",r[32];
-	printf("消息：%s\nHash结果：\n", data);
-	SM3Hash(data, 3, r);
+	// 输入数据
+	unsigned char message[] = "abc";
+	int message_len = strlen((char*)message);
 
-	dumpbuf(r, 32);
+	// 输出缓冲区
+	unsigned char hash_result[32] = { 0 };
+
+	// 调用 SM3 哈希函数
+	SM3Hash(message, message_len, hash_result);
+
+	// 输出哈希结果
+	printf("SM3 Hash:\n");
+	dumpbuf(hash_result, 32);
+
+	return 0;
 }
