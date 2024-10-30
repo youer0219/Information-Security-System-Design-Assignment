@@ -143,6 +143,6 @@ int SM4_SelfCheck()
 			return 1;
 		}
 	}
-	printf("sm4(16字节)自检成功！\n\n");
+	printf("sm4(16瀛楄妭)鑷鎴愬姛\n\n");
 	return 0;
 }

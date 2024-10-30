@@ -26,9 +26,9 @@ extern unsigned char SM2_h[32];
 
  
 
-big para_p, para_a, para_b, para_n, para_Gx, para_Gy, para_h;
-epoint *G;
-miracl *mip;
+extern big para_p, para_a, para_b, para_n, para_Gx, para_Gy, para_h;
+extern epoint *G;
+extern miracl *mip;
 int Test_Point(epoint* point);
 int Test_PubKey(epoint *pubKey);
 int Test_Null(unsigned char array[], int len);

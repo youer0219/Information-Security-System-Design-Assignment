@@ -1,3 +1,8 @@
 {
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "files.associations": {
+        "miracl.h": "c",
+        "mirdef.h": "c",
+        "kdf.h": "c"
+    }
 }
