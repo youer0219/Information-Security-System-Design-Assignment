@@ -3,6 +3,8 @@
     "files.associations": {
         "miracl.h": "c",
         "mirdef.h": "c",
-        "kdf.h": "c"
-    }
+        "kdf.h": "c",
+        "sm2_enc.h": "c"
+    },
+    "editor.detectIndentation": false
 }
