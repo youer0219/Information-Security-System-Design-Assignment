@@ -1,0 +1,9 @@
+直接将自己的key复制下来填入密钥那个输入框中即可使用
+当然，一般不建议这么干，明显不符合密保要求（
+
+这个程序访问的是qwen-plus模型，可以通过点击console.exe后缀的程序，打开命令提示符窗口再打开程序，会打印消息内容，这样你可以更加直观的看到数据是如何传输的
+
+由于未知bug，项目并没有实现流式输出，尽管你看着文字是一段一段冒出来的（）
+
+适用于Windows 64
+项目改造自https://github.com/oceanbuilders/ChatGPT-stream-for-Godot-4?tab=License-1-ov-file。
