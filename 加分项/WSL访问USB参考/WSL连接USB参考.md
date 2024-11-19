@@ -105,3 +105,36 @@ winget install --interactive --exact dorssel.usbipd-win
     ```
 
 
+---
+
+对于 龙脉芯片
+
+- 不要在Windows下运行证书工具，会占用该U盘导致无法连接WSL
+    - 报错信息
+        ```
+        PS C:\Users\xlm20> usbipd attach --wsl --busid 2-1
+        usbipd: info: Using WSL distribution 'Ubuntu' to attach; the device will be available in all WSL 2 distributions.
+        usbipd: info: Using IP address 172.27.64.1 to reach the host.
+        WSL wsl: �hKm0R localhost �NtM�n
+                                        �FO*g\��P0R WSL0NAT !j_
+                                                            N�v WSL
+        WSL N/ec localhost �Nt0
+        WSL
+        WSL usbip: error: Attach Request for 2-1 failed - Device busy (exported)
+        usbipd: warning: The device appears to be used by Windows; stop the software using the device, or bind the device using the '--force' option.
+        usbipd: error: Failed to attach device with busid '2-1'.
+        ```
+- 明确问题出在返回的设备名称为空上
+    ```
+    root@Youer:~/bestidiocs2024/ch06/参考/longmaiskf0016-stu/samples/skf/linux_mac/encrypt# ./encryptTest
+    Calling SKF_EnumDev...
+    SKF_EnumDev result: 0 (Success)
+    Enumerated device name: ''
+    Calling SKF_ConnectDev...
+    SKF_ConnectDev result: 167772166 (Invalid parameter)
+    Error at line 173 in function SKF_ConnectDev, call failed with error code: 167772166 (Invalid parameter)
+    ```
+- 明确了这个函数只能返回空值。怀疑是本身不支持！
+
+- 问官方去了
+![](https://i-blog.csdnimg.cn/direct/31d01c40b9774619af49389f00c1b7bf.png)
