@@ -31,6 +31,8 @@ winget install --interactive --exact dorssel.usbipd-win
     - 继续执行下面的命令`usbipd attach --wsl --busid 2-1`
         - 这里的`2-1`要换成自己的设备总线ID
         - ​​![](https://i-blog.csdnimg.cn/direct/e07fb47f19594215a96825b87d3ff6e4.png)
+      - 如果出现`usbipd: warning: A firewall appears to be blocking the connection; ensure TCP port 3240 is allowed.`，就去防火墙中设置入站规则。
+          - ![](https://i-blog.csdnimg.cn/direct/6d33610c88f0458cb716bcc52163ab28.png)
     - 在`Ubuntu`中运行`lsusb`命令
         - 没有这个命令就去问AI怎么安装……
         - 出现下图中间那个说明连接成功
@@ -134,7 +136,150 @@ winget install --interactive --exact dorssel.usbipd-win
     SKF_ConnectDev result: 167772166 (Invalid parameter)
     Error at line 173 in function SKF_ConnectDev, call failed with error code: 167772166 (Invalid parameter)
     ```
+    - 事后来看，应该运行enumdevinfo中的代码，其本身就是检测功能，自带合适的报错输出。
 - 明确了这个函数只能返回空值。怀疑是本身不支持！
 
-- 问官方去了
+- 询问官方
 ![](https://i-blog.csdnimg.cn/direct/31d01c40b9774619af49389f00c1b7bf.png)
+
+
+- [在WSL中进行USB设备测试](https://github.com/dorssel/usbipd-win/wiki/Tested-Devices)
+    - 是否可见
+        ```
+        root@Youer:~# lsusb
+        Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+        Bus 001 Device 002: ID 055c:db08 Proton Electronic Ind. Longmai mToken
+        Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
+        ```
+  - 是否被发现
+      ```
+      root@Youer:~# dmesg | tail
+      [  705.549639] vhci_hcd vhci_hcd.0: devid(131073) speed(2) speed_str(full-speed)
+      [  705.550110] vhci_hcd vhci_hcd.0: Device attached
+      [  705.823331] vhci_hcd: vhci_device speed not set
+      [  705.893339] usb 1-1: new full-speed USB device number 2 using vhci_hcd
+      [  705.973336] vhci_hcd: vhci_device speed not set
+      [  706.043250] usb 1-1: SetAddress Request (2) to port 0
+      [  706.075896] usb 1-1: New USB device found, idVendor=055c, idProduct=db08, bcdDevice= 1.01
+      [  706.076353] usb 1-1: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+      [  706.076703] usb 1-1: Product: Longmai mToken
+      [  706.076909] usb 1-1: Manufacturer: Longmai Technologies
+      ```
+      - [AI对输出的解释](https://www.doubao.com/thread/wb3e0b5e7ecdce020)
+  - USB复合设备检测(验证是否显示了所有预期的 USB 接口，例如大容量存储和通信设备)
+    - `lsusb --tree`
+        ```
+        root@Youer:~# lsusb --tree
+        /:  Bus 02.Port 1: Dev 1, Class=root_hub, Driver=vhci_hcd/8p, 5000M
+        /:  Bus 01.Port 1: Dev 1, Class=root_hub, Driver=vhci_hcd/8p, 480M
+            |__ Port 1: Dev 2, If 0, Class=Mass Storage, Driver=, 12M
+        ```
+    - [AI对输出的解释](https://www.doubao.com/thread/wb3e0b5e7ecdce020)
+  - ` udevadm info -a -n /dev/bus/usb/001/002`命令查看USB信息
+    ```
+    root@Youer:~# udevadm info -a -n /dev/bus/usb/001/002
+
+    Udevadm info starts with the device specified by the devpath and then
+    walks up the chain of parent devices. It prints for every device
+    found, all possible attributes in the udev rules key format.
+    A rule to match, can be composed by the attributes of the device
+    and the attributes from one single parent device.
+
+    looking at device '/devices/platform/vhci_hcd.0/usb1/1-1':
+        KERNEL=="1-1"
+        SUBSYSTEM=="usb"
+        DRIVER=="usb"
+        ATTR{authorized}=="1"
+        ATTR{avoid_reset_quirk}=="0"
+        ATTR{bConfigurationValue}=="1"
+        ATTR{bDeviceClass}=="00"
+        ATTR{bDeviceProtocol}=="00"
+        ATTR{bDeviceSubClass}=="00"
+        ATTR{bMaxPacketSize0}=="64"
+        ATTR{bMaxPower}=="200mA"
+        ATTR{bNumConfigurations}=="1"
+        ATTR{bNumInterfaces}==" 1"
+        ATTR{bcdDevice}=="0101"
+        ATTR{bmAttributes}=="80"
+        ATTR{busnum}=="1"
+        ATTR{configuration}==""
+        ATTR{devnum}=="2"
+        ATTR{devpath}=="1"
+        ATTR{idProduct}=="db08"
+        ATTR{idVendor}=="055c"
+        ATTR{ltm_capable}=="no"
+        ATTR{manufacturer}=="Longmai Technologies"
+        ATTR{maxchild}=="0"
+        ATTR{product}=="Longmai mToken"
+        ATTR{quirks}=="0x0"
+        ATTR{removable}=="unknown"
+        ATTR{rx_lanes}=="1"
+        ATTR{speed}=="12"
+        ATTR{tx_lanes}=="1"
+        ATTR{urbnum}=="9"
+        ATTR{version}==" 1.10"
+
+    looking at parent device '/devices/platform/vhci_hcd.0/usb1':
+        KERNELS=="usb1"
+        SUBSYSTEMS=="usb"
+        DRIVERS=="usb"
+        ATTRS{authorized}=="1"
+        ATTRS{authorized_default}=="1"
+        ATTRS{avoid_reset_quirk}=="0"
+        ATTRS{bConfigurationValue}=="1"
+        ATTRS{bDeviceClass}=="09"
+        ATTRS{bDeviceProtocol}=="01"
+        ATTRS{bDeviceSubClass}=="00"
+        ATTRS{bMaxPacketSize0}=="64"
+        ATTRS{bMaxPower}=="0mA"
+        ATTRS{bNumConfigurations}=="1"
+        ATTRS{bNumInterfaces}==" 1"
+        ATTRS{bcdDevice}=="0515"
+        ATTRS{bmAttributes}=="e0"
+        ATTRS{busnum}=="1"
+        ATTRS{configuration}==""
+        ATTRS{devnum}=="1"
+        ATTRS{devpath}=="0"
+        ATTRS{idProduct}=="0002"
+        ATTRS{idVendor}=="1d6b"
+        ATTRS{interface_authorized_default}=="1"
+        ATTRS{ltm_capable}=="no"
+        ATTRS{manufacturer}=="Linux 5.15.167.4-microsoft-standard-WSL2 vhci_hcd"
+        ATTRS{maxchild}=="8"
+        ATTRS{product}=="USB/IP Virtual Host Controller"
+        ATTRS{quirks}=="0x0"
+        ATTRS{removable}=="unknown"
+        ATTRS{rx_lanes}=="1"
+        ATTRS{serial}=="vhci_hcd.0"
+        ATTRS{speed}=="480"
+        ATTRS{tx_lanes}=="1"
+        ATTRS{urbnum}=="46"
+        ATTRS{version}==" 2.00"
+
+    looking at parent device '/devices/platform/vhci_hcd.0':
+        KERNELS=="vhci_hcd.0"
+        SUBSYSTEMS=="platform"
+        DRIVERS=="vhci_hcd"
+        ATTRS{driver_override}=="(null)"
+        ATTRS{nports}=="16"
+        ATTRS{usbip_debug}=="0"
+
+    looking at parent device '/devices/platform':
+        KERNELS=="platform"
+        SUBSYSTEMS==""
+        DRIVERS==""
+
+    ```
+    - [AI对输出的解释](https://kimi.moonshot.cn/share/ct0tmnm0atp2a09k98t0)
+  - 综上所述，设备测试中看不出什么问题
+
+- 重新试了试，还是找不到设备
+    ```
+    root@Youer:~/bestidiocs2024/ch06/longmaiskf0016-stu/samples/skf/linux_mac/enumdevinfo# nano makefile_linux
+    root@Youer:~/bestidiocs2024/ch06/longmaiskf0016-stu/samples/skf/linux_mac/enumdevinfo# make -f makefile_linux
+    rm -f enumdevice
+    g++  -o enumdevice main.o ../lib/linux/x64/libgm3000.1.0.so
+    root@Youer:~/bestidiocs2024/ch06/longmaiskf0016-stu/samples/skf/linux_mac/enumdevinfo# ./enumdevice
+            Not found device.
+    ```
+
